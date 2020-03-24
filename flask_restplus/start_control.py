@@ -2,7 +2,7 @@
 
 '''
 version: March 23, 2020 10:05 AM
-Last revision: March 23, 2020 05:25 PM
+Last revision: March 24, 2020 05:01 PM
 
 Author : Chao-Hsuan Ke
 '''
@@ -23,7 +23,7 @@ from flask import Flask
 from flask_restplus import Resource, Api, model
 from flask import request
 from model import UserDto
-from service import user_service
+from service import user_service, ChatbotService
 
 
 app = Flask(__name__)
@@ -95,8 +95,34 @@ class HelloWorld(Resource):
             'name': name
         }
 
+'''
+db Query
+'''
+@api.route('/db/query/newsCDC/<string:id>')
+class dbQuery(Resource):
+    @api.doc(responses={
+        200: 'ok',
+        400: 'not found',
+        500: 'something is error'
+    }, params={
+        'id': 'the task identifier'
+    })
+    def get(self, id):
+        data = ChatbotService.get_CDC_new(id)
+        print(data)
+        print(data.CDCnewsDto.id)
+        print(data.CDCnewsDto.body)
+        return {
+            #data
+             'status': 'you get a request.',
+             'id': id
+        }
 
 
 
+
+'''
+Main
+'''
 if __name__ == '__main__':
     app.run()
