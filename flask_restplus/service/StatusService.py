@@ -1,8 +1,8 @@
 # coding=utf8
 
 '''
-version: March 24, 2020 11:30 AM
-Last revision: March 24, 2020 04:49 PM
+version: March 25, 2020 02:50 PM
+Last revision: March 25, 2020 02:55 PM
 
 Author : Chao-Hsuan Ke
 '''
@@ -19,7 +19,6 @@ dbName = 'ncov2019'
 db connection 
 '''
 try:
-    # try to instantiate a client instance
     client = MongoClient('mongodb://' + dbip + ':' + str(dbport), serverSelectionTimeoutMS = 3000)
 except errors.ServerSelectionTimeoutError as err:
     client = None
@@ -28,10 +27,10 @@ except errors.ServerSelectionTimeoutError as err:
 db = client[dbName]
 
 '''
-query CDC news
+add chat status
 '''
-def get_CDC_new(id):
-    collectionName = 'news_cdc'
+def add_status():
+    collectionName = 'chatStatus'
     cdccollection = db[collectionName]
     document = cdccollection.find_one({'_id': ObjectId(id)})
     CDCnewsDto.CDCnewsDto.id = document.get('_id')
