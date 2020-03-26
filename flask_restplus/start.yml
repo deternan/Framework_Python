@@ -1,0 +1,36 @@
+schemes:
+  - http
+parameters:
+  - name: name
+    in: query  # body / query
+    description: user name
+    type: string
+    #enum: ['111', '222']
+    required: true
+    default: 'my name'
+  - name: type
+    in: query
+    description: 'Status'
+    type: string
+    #enum: ['formal', 'test']
+    required: true
+    default: 'status'
+definitions:
+  Palette:
+    type: object
+    properties:
+      palette_name:
+        type: array
+        items:
+          $ref: ''
+  Color:
+    type: string
+responses:
+  200:
+    description: Success
+    schema:
+      $ref: ''
+    examples:
+      data: (0, "send rabbitmq k8s job success")
+  500:
+    description: Error (bad request)
