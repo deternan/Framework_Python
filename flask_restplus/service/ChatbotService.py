@@ -2,7 +2,7 @@
 
 '''
 version: March 24, 2020 11:30 AM
-Last revision: March 24, 2020 04:49 PM
+Last revision: March 26, 2020 03:51 PM
 
 Author : Chao-Hsuan Ke
 '''
@@ -28,6 +28,7 @@ except errors.ServerSelectionTimeoutError as err:
 db = client[dbName]
 
 '''
+CDC
 query CDC news
 '''
 def get_CDC_new(id):
@@ -39,6 +40,3 @@ def get_CDC_new(id):
     return CDCnewsDto
 
 
-'''
-delete status
-'''
