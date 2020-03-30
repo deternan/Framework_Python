@@ -10,7 +10,6 @@ Author : Chao-Hsuan Ke
 from pymongo import MongoClient, errors
 from bson.objectid import ObjectId
 from model.DTO import statusDto
-
 from unit import globals as golvar
 
 dbip = '10.136.154.5'
