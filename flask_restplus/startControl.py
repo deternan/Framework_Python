@@ -2,7 +2,7 @@
 
 '''
 version: March 23, 2020 10:05 AM
-Last revision: March 26, 2020 05:32 PM
+Last revision: March 30, 2020 04:40 PM
 
 Author : Chao-Hsuan Ke
 '''
@@ -26,7 +26,8 @@ import json
 
 from flask import Flask, request, Blueprint
 from flask_restplus import Resource, Api, Namespace
-from service import user_service, ChatbotService, StatusService
+from service import user_service, ChatbotService, StatusService, DataService
+from model.DTO import ChinaNewsDto, DeltaDeclarationDTO
 from bson.objectid import ObjectId
 from unit import globals as golvar
 
@@ -38,13 +39,17 @@ api_blueprint = Blueprint('api', 'api', url_prefix='/api')
 
 api = Api(app, prefix="/v1", title="APIs", description="ChatBot APIs.")
 ns = Namespace("Test", description="APIs test")
-ns2 = Namespace("Query", description="Data query")
-ns3 = Namespace("chatStatus", description="chat status")
+ns2 = Namespace("chat", description="chat status")
+ns3 = Namespace("db", description="chat status")
+
 ns4 = Namespace("request", description="request")
+ns5 = Namespace("Query", description="Data query")
 api.add_namespace(ns)
 api.add_namespace(ns2)
 api.add_namespace(ns3)
+
 api.add_namespace(ns4)
+api.add_namespace(ns5)
 app.register_blueprint(api_blueprint)
 
 
@@ -54,11 +59,6 @@ class JSONEncoder(json.JSONEncoder):
         if isinstance(o, ObjectId):
             return str(o)
         return json.JSONEncoder.default(self, o)
-
-
-'''
-User query testing
-'''
 
 
 @ns.route('/query/test/user/<string:name>/<string:email>')
@@ -87,61 +87,12 @@ class UserQuery(Resource):
         return data
 
 
-'''
-GET and POST 
-'''
-
-@ns.route('/<int:id>/<string:name>')
-class HelloWorld(Resource):
-    @api.doc(responses={
-        200: 'ok',
-        400: 'not found',
-        500: 'something is error'
-    }, params={
-        'id': 'the task identifier',
-        'name': 'the user name'
-    })
-    def get(self, id):
-        return {
-            'status': 'you get a request.',
-            'id': id
-        }
-
-    def post(self, id, name):
-        return {
-            'status': 'you post a request.',
-            'id': id,
-            'name': name
-        }
-
 
 '''
-CDC news
-'''
-
-@ns2.route('/db/query/newsCDC/<string:id>')
-class dbQuery(Resource):
-    @api.doc(responses={
-        200: 'ok',
-        400: 'not found',
-        500: 'something is error'
-    }, params={
-        'id': 'the task identifier'
-    })
-    def get(self, id):
-        data = ChatbotService.get_CDC_new(id)
-        ## transfer to JSON
-        responseData = {}
-        responseData['id'] = str(data.CDCnewsDto.id)
-        jsonstr = data.CDCnewsDto.body
-        responseData['text'] = jsonstr
-        return responseData
-
-
-'''
+chat-status-api-controller 
 status
 '''
-@ns3.route('/add/<string:name>/<string:typeStr>/<int:requestId>/<int:count>', methods=['POST'])
+@ns2.route('/status/add/<string:name>/<string:typeStr>/<int:requestId>/<int:count>', methods=['POST'])
 class statusInsert(Resource):
     @api.doc(responses={
         200: 'ok',
@@ -162,8 +113,8 @@ class statusInsert(Resource):
         response = StatusService.add_status(data)
         return response
 
-@ns3.route('/query/<string:name>', methods=['GET'])
-class statusQueery(Resource):
+@ns2.route('/status/check/<string:name>', methods=['GET'])
+class statusCheck(Resource):
     @api.doc(responses={
         200: 'ok',
         400: 'not found',
@@ -181,7 +132,7 @@ class statusQueery(Resource):
         responseData['timestamp'] = str(data.statusDto.timestamp.utcnow())
         return responseData
 
-@ns3.route('/delete/<string:name>', methods=['GET'])
+@ns2.route('/status/delete/<string:name>', methods=['GET'])
 class statusDelete(Resource):
     @api.doc(responses={
         200: 'ok',
@@ -192,6 +143,99 @@ class statusDelete(Resource):
     def get(self, name):
         response = StatusService.delete_Status(name)
         return response
+
+
+'''
+data-query-controller
+'''
+'''
+POST /db/public/China/news
+'''
+@ns3.route('/public/China/news/<string:country>/<int:responseNum>', methods=['POST'])
+class ChinaNews(Resource):
+    @api.doc(responses={
+        200: 'success',
+        403: 'Forbidden',
+        404: 'not found'
+    }, params={'country': {'description': 'query country',  'type': 'string', 'required': True, 'default': '中國'},
+               'responseNum': {'description': 'Num of response', 'default': 3}
+    })
+    def post(self, country, responseNum):
+        data = {}
+        data['type'] = golvar.pubNewsType
+        responseItems = DataService.get_ChinaNews(country, responseNum)
+        if len(responseItems) > 0:
+            data['status'] = True
+        else:
+            data['status'] = False
+        Items = []
+        count = 0
+        for item in responseItems:
+            Item = responseItems[item]
+            Item = ChinaNewsDto
+            Items.append(responseItems[item])
+            #print(count, item, responseItems[item])
+            count += 1
+        data['items'] = Items
+        return data
+
+'''
+POST /db/delta/declaration
+'''
+@ns3.route('/delta/declaration/<string:country>/<int:responseNum>', methods=['POST'])
+class deltadeclaration(Resource):
+    @api.doc(responses={
+        200: 'success',
+        403: 'Forbidden',
+        404: 'not found'
+    }, params={'country': {'description': 'query country',  'type': 'string', 'required': True, 'default': '台灣'},
+               'responseNum': {'description': 'Num of response', 'default': 3}
+    })
+    def post(self, country, responseNum):
+        data = {}
+        data['type'] = golvar.deltaType
+        responseItems = DataService.get_DeltaDeclaration(country, responseNum)
+
+        if len(responseItems) > 0:
+            data['status'] = True
+        else:
+            data['status'] = False
+        Items = []
+        count = 0
+        for item in responseItems:
+            Item = responseItems[item]
+            Item = DeltaDeclarationDTO
+            Items.append(responseItems[item])
+            count += 1
+        data['items'] = Items
+        return data
+
+'''
+POST /db/government/Taiwan/declaration
+'''
+
+
+
+'''
+CDC news
+'''
+@ns5.route('/db/query/newsCDC/<string:id>')
+class dbQuery(Resource):
+    @api.doc(responses={
+        200: 'ok',
+        400: 'not found',
+        500: 'something is error'
+    }, params={
+        'id': 'the task identifier'
+    })
+    def get(self, id):
+        data = ChatbotService.get_CDC_new(id)
+        ## transfer to JSON
+        responseData = {}
+        responseData['id'] = str(data.CDCnewsDto.id)
+        jsonstr = data.CDCnewsDto.body
+        responseData['text'] = jsonstr
+        return responseData
 
 
 '''
@@ -230,6 +274,33 @@ class queryRumors(Resource):
         print(x)
         #print(x.json())
         return x.json()
+
+
+'''
+GET and POST 
+'''
+@ns.route('/<int:id>/<string:name>')
+class HelloWorld(Resource):
+    @api.doc(responses={
+        200: 'ok',
+        400: 'not found',
+        500: 'something is error'
+    }, params={
+        'id': 'the task identifier',
+        'name': 'the user name'
+    })
+    def get(self, id):
+        return {
+            'status': 'you get a request.',
+            'id': id
+        }
+
+    def post(self, id, name):
+        return {
+            'status': 'you post a request.',
+            'id': id,
+            'name': name
+        }
 
 
 '''
