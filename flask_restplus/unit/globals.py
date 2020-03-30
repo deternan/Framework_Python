@@ -9,21 +9,20 @@ collection name
 '''
 global collection_status
 collection_status = 'chatStatus'
-
-
-'''
-    Type API query
-'''
-global RumorsType
-RumorsType = 'rumors'
-
+global collection_news
+collection_news = 'news'
+global collection_deltadeclaration
+collection_deltadeclaration = 'delta_declaration'
 
 
 '''
 Type Display
 '''
-class TypeVar:
-    global RumorsType
-    RumorsType = 'Rumors'
+global deltaType
+deltaType = 'deltaType'
+global pubNewsType
+pubNewsType = 'China news'
+global RumorsType
+RumorsType = 'Rumors'
 
 
