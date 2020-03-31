@@ -2,7 +2,7 @@
 
 '''
 version: March 23, 2020 10:05 AM
-Last revision: March 30, 2020 04:40 PM
+Last revision: March 31, 2020 01:08 PM
 
 Author : Chao-Hsuan Ke
 '''
@@ -27,7 +27,7 @@ import json
 from flask import Flask, request, Blueprint
 from flask_restplus import Resource, Api, Namespace
 from service import user_service, ChatbotService, StatusService, DataService
-from model.DTO import ChinaNewsDto, DeltaDeclarationDTO
+from model.DTO import ChinaNewsDto, DeltaDeclarationDTO, GovernmentDeclarationDTO, GoogleNewsDTO
 from bson.objectid import ObjectId
 from unit import globals as golvar
 
@@ -211,9 +211,97 @@ class deltadeclaration(Resource):
         return data
 
 '''
-POST /db/government/Taiwan/declaration
+POST /db/government/Taiwan/declaration  collection_governmentdeclaration
 '''
+@ns3.route('/government/Taiwan/declaration/<string:country>/<int:responseNum>', methods=['POST'])
+class governmentdeclaration(Resource):
+    @api.doc(responses={
+        200: 'success',
+        403: 'Forbidden',
+        404: 'not found'
+    }, params={'country': {'description': 'query country',  'type': 'string', 'required': True, 'default': '台灣'},
+               'responseNum': {'description': 'Num of response', 'default': 3}
+    })
+    def post(self, country, responseNum):
+        data = {}
+        data['type'] = golvar.govType
+        responseItems = DataService.get_GovernmentDeclaration(country, responseNum)
 
+        if len(responseItems) > 0:
+            data['status'] = True
+        else:
+            data['status'] = False
+        Items = []
+        count = 0
+        for item in responseItems:
+            Items.append(responseItems[item])
+            count += 1
+        data['items'] = Items
+        return data
+
+'''
+API request
+'''
+'''
+POST /api/rumors/
+rumors API query
+'''
+@ns4.route('/rumors/<string:name>/<string:query>', methods=['POST'])
+class queryRumors(Resource):
+    @api.doc(responses={
+        200: 'ok',
+        400: 'not found',
+        500: 'something is error'
+    }, params={'name': {'description': 'user name', 'default': 'my Name', 'required': True},
+               'query': {'description': 'query',  'type': 'string', 'required': True, 'default': '口罩可以重複使用嗎'}
+    })
+    def post(self, name, query):
+        data = {}
+        data['userName'] = name
+        data['type'] = golvar.RumorsType
+        data['query'] = query
+
+        url = 'http://10.136.154.13:5568/analytics/ir?'
+        postQuery = {'userName': name,
+                     'type': golvar.RumorsType,
+                     'query' : query
+                     }
+        print(postQuery)
+        #x = requests.post(url, postQuery)
+        x = requests.get(url, postQuery)
+        #print(x)
+        return x.json()
+
+'''
+POST /api/rumors/
+rumors API query
+'''
+@ns5.route('/google/news/<string:country>/<int:responseNum>', methods=['POST'])
+class getGoogleNews(Resource):
+    @api.doc(responses={
+        200: 'ok',
+        400: 'not found',
+        500: 'something is error'
+    }, params={'country': {'description': 'country',  'type': 'string', 'required': True, 'default': 'tw'},
+               'responseNum': {'description': 'Num of response', 'default': 3}
+    })
+    def post(self, country, responseNum):
+        data = {}
+        #data['userName'] = name
+        #data['country'] = country
+        data['type'] = golvar.GoogleNewsType
+        responseItems = DataService.get_GoogleNews(country, responseNum)
+        if len(responseItems) > 0:
+            data['status'] = True
+        else:
+            data['status'] = False
+        Items = []
+        count = 0
+        for item in responseItems:
+            Items.append(responseItems[item])
+            count += 1
+        data['items'] = Items
+        return data
 
 
 '''
@@ -237,43 +325,6 @@ class dbQuery(Resource):
         responseData['text'] = jsonstr
         return responseData
 
-
-'''
-API request
-'''
-
-'''
-rumors API query
-'''
-@ns4.route('/rumors/<string:name>/<string:query>', methods=['POST'])
-class queryRumors(Resource):
-    @api.doc(responses={
-        200: 'ok',
-        400: 'not found',
-        500: 'something is error'
-    }, params={'name': {'description': 'user name', 'default': 'my Name', 'required': True},
-               'query': {'description': 'query',  'type': 'string', 'required': True, 'default': '口罩可以重複使用嗎'}
-    })
-    def post(self, name, query):
-        data = {}
-        data['userName'] = name
-        print(golvar.GlobalVar, golvar.RumorsType)
-        #print('rumors type', golvar.APIlVar.RumorsType)
-        #data['type'] = golvar.GlobalVar.RumorsType
-        data['type'] = 'rumors'
-        data['query'] = query
-
-        url = 'http://10.136.154.13:5568/analytics/ir?'
-        postQuery = {'userName': name,
-                     'type': 'rumors',
-                     'query' : query
-                     }
-        print(postQuery)
-        #x = requests.post(url, postQuery)
-        x = requests.get(url, postQuery)
-        print(x)
-        #print(x.json())
-        return x.json()
 
 
 '''
