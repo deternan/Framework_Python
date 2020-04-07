@@ -57,3 +57,15 @@ global Loc_China3
 Loc_China3 = 'China'
 global Loc_China4
 Loc_China4 = 'tw'
+
+'''
+country (Google News)
+'''
+global Taiwan_Chinese_dict
+Taiwan_Chinese_dict = {'台灣': 'tw', '臺灣': 'tw', '呆丸': 'tw', '台湾': 'tw'}
+global China_Chinese_dict
+China_Chinese_dict = {'中國': 'cn', '大陸': 'cn', '老共': 'cn', '中国': 'cn'}
+global Japan_Chinese_dict
+Japan_Chinese_dict = {'日本': 'jp'}
+global America_Chinese_dict
+America_Chinese_dict = {'美國': 'us', '美国': 'us', '米國': 'us', '米国': 'us'}
