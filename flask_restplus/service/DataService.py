@@ -2,7 +2,7 @@
 
 '''
 version: March 30, 2020 10:00 AM
-Last revision: April 01, 2020 04:16 PM
+Last revision: April 06, 2020 03:07 PM
 
 Author : Chao-Hsuan Ke
 '''
@@ -288,7 +288,33 @@ def get_TravelAlert(userName, query):
 '''
 Google News
 '''
-def get_GoogleNews(country, responseNum):
+def get_abbreviation(country):
+    getAbb = None
+    tagCheck = False
+    if golvar.Taiwan_Chinese_dict.get(country) != None:
+        getAbb = golvar.Taiwan_Chinese_dict.get(country)
+        tagCheck = True
+
+    if golvar.China_Chinese_dict.get(country) != None:
+        getAbb = golvar.China_Chinese_dict(country)
+        tagCheck = True
+
+    if golvar.Japan_Chinese_dict.get(country) != None:
+        getAbb = golvar.Japan_Chinese_dict.get(country)
+        tagCheck = True
+
+    if golvar.America_Chinese_dict.get(country) != None:
+        getAbb = golvar.America_Chinese_dict.get(country)
+        tagCheck = True
+
+
+    if tagCheck == True:
+        return getAbb
+    else :
+        return 'None'
+
+def get_GoogleNews(countryStr, responseNum):
+    country = get_abbreviation(countryStr)
     url = connvar.googleURL
     postQuery = {'country': country,
                  'category': connvar.category,
@@ -296,10 +322,6 @@ def get_GoogleNews(country, responseNum):
                  }
     x = requests.get(url, postQuery)
     googlejson = x.json()
-    # print(googlejson)
-    # print(googlejson['status'])
-    # print(googlejson['totalResults'])
-    # print(len(googlejson['articles']))
 
     if len(googlejson['articles']) < responseNum:
         responseNum = len(googlejson['articles'])

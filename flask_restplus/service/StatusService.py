@@ -45,7 +45,7 @@ def get_Status(userName):
         jsonitems['requestId'] = document.get('requestId')
         jsonitems['type'] = document.get('type')
         jsonitems['count'] = document.get('count')
-        jsonitems['count'] = str(document.get('timestamp'))
+        jsonitems['timestamp'] = str(document.get('timestamp'))
         # statusDto.statusDto = None
         # statusDto.statusDto.id = str(document.get('_id'))
         # statusDto.statusDto.userName = document.get('userName')
